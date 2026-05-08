@@ -40,4 +40,3 @@ WAL writer, checkpointer, bgwriter, and walreceiver are all separate processes w
 ## Extension and Plugin Safety
 
 Postgres extensions (written in C) assume process isolation — a buggy extension can only crash one backend. In a single process, an extension crash takes everything down. You'd either need to **sandbox extensions** or simply accept this as a limitation (reasonable for embedded use cases).
-

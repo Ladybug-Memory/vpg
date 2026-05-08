@@ -1,17 +1,15 @@
-import sys
 import tempfile
 import threading
 import vpg
-
-from pathlib import Path
-
 
 
 def main() -> None:
     with tempfile.TemporaryDirectory(prefix="vpg_python_smoke_") as data_dir:
         with vpg.get_server(data_dir) as pg:
             pg.query("CREATE TABLE py_people (id INT PRIMARY KEY, name TEXT NOT NULL);")
-            pg.query("INSERT INTO py_people (id, name) VALUES (1, 'Ada'), (2, 'Grace');")
+            pg.query(
+                "INSERT INTO py_people (id, name) VALUES (1, 'Ada'), (2, 'Grace');"
+            )
             result = pg.query("SELECT id, name FROM py_people ORDER BY id;")
             print(result, end="")
             assert "1,Ada" in result

@@ -8,7 +8,6 @@ from setuptools import setup
 from setuptools.command.build_py import build_py
 from setuptools.command.bdist_wheel import bdist_wheel
 
-
 ROOT = Path(__file__).resolve().parent
 PY_LIBRARY = ROOT / "build" / "libvpg_python.so"
 
@@ -24,6 +23,7 @@ class BuildPy(build_py):
 
 
 cmdclass = {"build_py": BuildPy}
+
 
 class BinaryWheel(bdist_wheel):
     def finalize_options(self) -> None:
