@@ -22,10 +22,13 @@ import os
 #flag -licuuc
 #flag -lz
 #flag -lm
+#flag linux -latomic
 
 fn C.vpg_initdb_options(data_dir &char, username &char, auth &char, encoding &char, locale &char, no_instructions bool)
 fn C.vpg_backend_start_options(data_dir &char, username &char, dbname &char, shared_preload_libraries &char)
 fn C.vpg_set_exec_path(path &char)
+fn C.vpg_set_python_error(message &char)
+fn C.vpg_python_error() &char
 fn C.vpg_exec(query &char) &char
 fn C.vpg_last_error_message() &char
 fn C.vpg_finish()
@@ -156,4 +159,101 @@ pub fn (mut pg PGEmbedded) close() {
 	}
 	C.vpg_finish()
 	pg.initialized = false
+}
+
+fn py_cstring(value &char) string {
+	if value == 0 {
+		return ''
+	}
+	return unsafe { cstring_to_vstring(value) }
+}
+
+// The C backend is process-global today, so Python receives an opaque non-null
+// token rather than a pointer to independent backend state.
+@[export: 'vpg_py_set_exec_path']
+@[py_export]
+pub fn py_set_exec_path(path &char) {
+	C.vpg_set_exec_path(path)
+}
+
+@[export: 'vpg_py_open']
+@[py_export]
+pub fn py_open(data_dir &char, user &char, db &char) voidptr {
+	data_dir_v := py_cstring(data_dir)
+	user_arg := py_cstring(user)
+	db_arg := py_cstring(db)
+	user_v := if user_arg.len > 0 { user_arg } else { 'postgres' }
+	db_v := if db_arg.len > 0 { db_arg } else { user_v }
+	if data_dir_v.len == 0 {
+		C.vpg_set_python_error(c'data directory is required')
+		return 0
+	}
+	C.vpg_backend_start_options(data_dir_v.str, user_v.str, db_v.str, c'')
+	if C.vpg_last_error_message() != 0 {
+		msg := C.vpg_last_error_message()
+		if msg != 0 {
+			C.vpg_set_python_error(msg)
+		}
+		return 0
+	}
+	return voidptr(1)
+}
+
+@[export: 'vpg_py_initdb']
+@[py_export]
+pub fn py_initdb(data_dir &char, user &char) int {
+	data_dir_v := py_cstring(data_dir)
+	user_arg := py_cstring(user)
+	user_v := if user_arg.len > 0 { user_arg } else { 'postgres' }
+	if data_dir_v.len == 0 {
+		C.vpg_set_python_error(c'data directory is required')
+		return -1
+	}
+	C.vpg_initdb_options(data_dir_v.str, user_v.str, c'trust', c'UTF8', c'C', true)
+	if C.vpg_last_error_message() != 0 {
+		msg := C.vpg_last_error_message()
+		if msg != 0 {
+			C.vpg_set_python_error(msg)
+		}
+		return -1
+	}
+	return 0
+}
+
+@[export: 'vpg_py_query']
+@[py_export]
+pub fn py_query(handle voidptr, query &char) &char {
+	if handle == 0 {
+		C.vpg_set_python_error(c'PG handle is null')
+		return 0
+	}
+	c_result := C.vpg_exec(query)
+	if c_result == 0 {
+		msg := C.vpg_last_error_message()
+		if msg != 0 {
+			C.vpg_set_python_error(msg)
+		}
+		return 0
+	}
+	return c_result
+}
+
+@[export: 'vpg_py_close']
+@[py_export]
+pub fn py_close(handle voidptr) {
+	if handle != 0 {
+		C.vpg_finish()
+	}
+}
+
+@[export: 'vpg_py_last_error']
+@[py_export]
+pub fn py_last_error() &char {
+	return C.vpg_python_error()
+}
+
+@[export: 'vpg_py_free']
+@[py_export]
+pub fn py_free(ptr voidptr) {
+	C.vpg_free(ptr)
 }

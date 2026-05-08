@@ -29,6 +29,7 @@
 static bool vpg_initialized = false;
 static bool vpg_runtime_ready = false;
 static char *vpg_last_error = NULL;
+static char *vpg_python_last_error = NULL;
 static char *vpg_exec_path = NULL;
 const char *progname = "vpg";
 
@@ -148,6 +149,21 @@ vpg_free(void *ptr)
 const char *
 vpg_last_error_message(void)
 {
+	return vpg_last_error;
+}
+
+void
+vpg_set_python_error(const char *message)
+{
+	vpg_replace_owned_string(&vpg_python_last_error,
+							 message != NULL ? message : "unknown vpg python error");
+}
+
+const char *
+vpg_python_error(void)
+{
+	if (vpg_python_last_error != NULL)
+		return vpg_python_last_error;
 	return vpg_last_error;
 }
 

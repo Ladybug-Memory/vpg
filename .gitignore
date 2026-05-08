@@ -1,4 +1,7 @@
 data/
+build/
+__pycache__/
+*.pyc
 libvpg.a
 vpg.o
 test_vpg

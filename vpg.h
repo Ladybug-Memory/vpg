@@ -14,6 +14,8 @@ void vpg_backend_start_options(const char *data_dir,
                                const char *dbname,
                                const char *shared_preload_libraries);
 void vpg_set_exec_path(const char *path);
+void vpg_set_python_error(const char *message);
+const char *vpg_python_error(void);
 const char *vpg_exec(const char *query);
 const char *vpg_last_error_message(void);
 void vpg_finish(void);

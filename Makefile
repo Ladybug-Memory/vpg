@@ -3,6 +3,7 @@ PGINST := $(PGROOT)/installed
 PGSRC  := $(PGROOT)/src
 
 CC := cc
+V  ?= /home/ubuntu/src/v/v
 
 CFLAGS := -g -O0 \
 	-I$(PGINST)/include/server \
@@ -47,8 +48,9 @@ CORE_OBJS   := vpg.o
 
 # ---- combined archive --------------------------------------------------
 VPG_ARCHIVE := libvpg.a
+PY_LIB      := build/libvpg_python.so
 
-.PHONY: all clean
+.PHONY: all clean bindgen python-lib python-smoke
 
 all: $(VPG_ARCHIVE)
 
@@ -70,5 +72,15 @@ $(VPG_ARCHIVE): $(CORE_OBJS) $(INITDB_LIB)
 	rm -f $@
 	ar rcs $@ $(CORE_OBJS) $(INITDB_OBJS) $(BACKEND_OBJS) $(FEUTILS_NEEDED)
 
+bindgen:
+	$(V) run tools/bindgen.v
+
+python-lib: $(VPG_ARCHIVE) bindgen
+	mkdir -p build
+	$(V) -shared -o $(PY_LIB) .
+
+python-smoke: python-lib
+	python3 tests/python_smoke.py
+
 clean:
-	rm -f $(VPG_ARCHIVE) $(CORE_OBJS) $(INITDB_OBJS) $(INITDB_LIB)
+	rm -f $(VPG_ARCHIVE) $(CORE_OBJS) $(INITDB_OBJS) $(INITDB_LIB) $(PY_LIB)
