@@ -1,7 +1,11 @@
 data/
 build/
+dist/
+.venv/
+.uv-cache/
 __pycache__/
 *.pyc
+*.egg-info/
 libvpg.a
 vpg.o
 test_vpg

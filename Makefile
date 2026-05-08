@@ -50,7 +50,7 @@ CORE_OBJS   := vpg.o
 VPG_ARCHIVE := libvpg.a
 PY_LIB      := build/libvpg_python.so
 
-.PHONY: all clean bindgen python-lib python-smoke
+.PHONY: all clean bindgen python-lib python-smoke wheel publish
 
 all: $(VPG_ARCHIVE)
 
@@ -81,6 +81,12 @@ python-lib: $(VPG_ARCHIVE) bindgen
 
 python-smoke: python-lib
 	python3 tests/python_smoke.py
+
+wheel:
+	uv build --wheel
+
+publish: wheel
+	uv publish dist/*.whl
 
 clean:
 	rm -f $(VPG_ARCHIVE) $(CORE_OBJS) $(INITDB_OBJS) $(INITDB_LIB) $(PY_LIB)

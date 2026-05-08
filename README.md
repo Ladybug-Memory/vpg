@@ -14,6 +14,19 @@ A thin Vlang layer that boots PostgreSQL 18.1 in standalone (single‑user) mode
 3. Build PostgreSQL in the submodule (for example `./configure --prefix=$(pwd)/installed && make -j4 install` inside `./postgresql`).
 4. Ensure a PostgreSQL data directory exists at `./data` (created by `./postgresql/installed/bin/initdb`).
 
+## Python packaging
+The Python package uses `uv` with setuptools build hooks. A wheel build runs
+`make python-lib`, packages the generated `libvpg_python.so` inside `vpg/`, and
+tags the wheel for the current Python/platform ABI.
+
+```sh
+uv build --wheel
+uv publish dist/*.whl
+```
+
+For PyPI publishing, set `UV_PUBLISH_TOKEN` to a PyPI API token before running
+`uv publish`, or pass the token with `uv publish --token ...`.
+
 ## Usage
 ```v
 mut pg := vpg.NewPGEmbedded{

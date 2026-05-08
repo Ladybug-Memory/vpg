@@ -1,0 +1,14 @@
+include README.md
+include Makefile
+include v.mod
+include vpg.v
+include vpg.c
+include vpg.h
+recursive-include initdb *.c *.h
+recursive-include tools *.v
+recursive-include vpg *.py
+exclude vpg/libvpg_python.so
+prune build
+prune data
+prune dist
+prune postgresql

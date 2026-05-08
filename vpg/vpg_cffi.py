@@ -25,6 +25,9 @@ void vpg_py_free(void * ptr);
 
 
 def _default_library_path() -> Path:
+    packaged_library = Path(__file__).resolve().with_name("libvpg_python.so")
+    if packaged_library.exists():
+        return packaged_library
     return Path(__file__).resolve().parents[1] / "build" / "libvpg_python.so"
 
 
