@@ -7,7 +7,7 @@ import v.parser
 import v.pref
 
 const source_file = 'vpg.v'
-const output_file = 'python/vpg_cffi.py'
+const output_file = 'vpg/vpg_cffi.py'
 
 struct ExportedFn {
 	c_name string
@@ -187,6 +187,11 @@ fn python_wrapper(exports []ExportedFn) !string {
 	b.writeln('            self.close()')
 	b.writeln('        except Exception:')
 	b.writeln('            pass')
+	b.writeln('')
+	b.writeln('')
+	b.writeln('def get_server(data_dir: str, user: str = "postgres", db: str = "postgres") -> EmbeddedPostgres:')
+	b.writeln('    initdb(data_dir, user)')
+	b.writeln('    return EmbeddedPostgres(data_dir, user, db)')
 	return b.str()
 }
 

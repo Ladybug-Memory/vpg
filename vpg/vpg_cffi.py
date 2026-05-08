@@ -98,3 +98,8 @@ class EmbeddedPostgres:
             self.close()
         except Exception:
             pass
+
+
+def get_server(data_dir: str, user: str = "postgres", db: str = "postgres") -> EmbeddedPostgres:
+    initdb(data_dir, user)
+    return EmbeddedPostgres(data_dir, user, db)
